@@ -54,15 +54,23 @@ Configure them in `config/config.json`:
 Example config/auth.json structure:
 
 {
+  
   "tenant_id": "your_aurora_tenant_id",
+  
   "bearer_token": "your_aurora_bearer_token",
+  
   "auth": "your_quickbase_user_token",
+  
   "table_id": "your_quickbase_table_id",
+  
   "project_ids": [
+  
     {"id": "aurora_project_id_1", "label": "Project A"},
+    
     {"id": "aurora_project_id_2", "label": "Project B"}
   ]
 }
+
 
 #### Important: If you want to add a new project_id to test, it must be added to the project_ids list within the config/auth.json file.
 
