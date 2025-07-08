@@ -46,4 +46,3 @@ See `requirements.txt`.
 
 ## 📄 License
 This project is part of a technical evaluation for Better Earth. Internal use only.
-""
