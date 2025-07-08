@@ -41,6 +41,8 @@ Configure them in `config/config.json`:
 - `auth`
 - `table_id`
 
+### Important: If you want to add a new project_id to test it, it must be added in the src/config/auth.json file 
+
 ## 📚 Dependencies
 See `requirements.txt`.
 
