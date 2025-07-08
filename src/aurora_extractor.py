@@ -9,13 +9,33 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AuroraProjectDataExtractor:
+    """
+    Class to extract project and design data from the Aurora Solar API.
+    """
     def __init__(self, tenant_id, project_id, bearer_token):
+        """
+        #Initializes the Aurora Solar data extractor.
+        Args:
+        tenant_id (str): The Aurora Solar tenant ID.
+        project_id (str): The Aurora Solar project ID.
+        bearer_token (str): The Bearer authentication token for the API.
+        """
+        
         self.tenant_id = tenant_id
         self.project_id = project_id
         self.bearer_token = bearer_token
         self.base_url = "https://api-sandbox.aurorasolar.com"
 
     def get_json_with_bearer(self, url):
+        """
+        Makes a GET request to the URL specified with the Bearer token.
+        Args:
+        url (str): The URL to which the request will be made.
+        Returns:
+        dict: The JSON response from the API.
+        Raises:
+        requests.exceptions.RequestException: If the HTTP request fails.
+        """
         headers = {
             "accept": "application/json",
             "authorization": f"Bearer {self.bearer_token}"
@@ -25,12 +45,24 @@ class AuroraProjectDataExtractor:
         return response.json()
 
     def get_designs(self):
+        """
+        Gets the designs id's associated with the current project.
+        Returns:
+        pd.DataFrame: A DataFrame containing the layout IDs, names, and system sizes.
+        """
         url = f"{self.base_url}/tenants/{self.tenant_id}/projects/{self.project_id}/designs"
         data = self.get_json_with_bearer(url)
         designs = pd.json_normalize(data['designs'])[['id','name', 'system_size_stc']]
         return designs.rename(columns={'id':'design_id', 'name':'6', 'system_size_stc':'7'})
 
     def get_latest_proposal(self, design_id):
+        """
+        Gets the most recent proposal for a specific design.
+        Args:
+        design_id (str): The design ID.
+        Returns:
+        pd.DataFrame: A DataFrame with the update date and the proposal link.
+        """
         url = f"{self.base_url}/tenants/{self.tenant_id}/designs/{design_id}/proposals/default"
         data = self.get_json_with_bearer(url)
         proposal = pd.json_normalize(data['proposal'])[['updated_at', 'proposal_link']]
@@ -38,6 +70,13 @@ class AuroraProjectDataExtractor:
         return proposal.rename(columns={'proposal_link':'19'})
 
     def get_summary(self, design_id):
+        """
+        Gets a summary of a specific design, including energy production and panel details.
+        Args:
+        design_id (str): The design ID.
+        Returns:
+        pd.DataFrame: A DataFrame with the annual energy production, azimuth, module name, and count.
+        """
         url = f"{self.base_url}/tenants/{self.tenant_id}/designs/{design_id}/summary"
         data = self.get_json_with_bearer(url)
         summary = pd.json_normalize(data['design'])[['arrays', 'energy_production.annual']]
@@ -52,6 +91,11 @@ class AuroraProjectDataExtractor:
         })
 
     def get_address(self):
+        """
+        Gets the project address information.
+        Returns:
+        pd.DataFrame: A DataFrame containing the address components.
+        """
         us_states = {
             'AL': 'Alabama',
             'AK': 'Alaska',
@@ -132,6 +176,12 @@ class AuroraProjectDataExtractor:
         return address_df
 
     def extract_all_data(self):
+        """
+        Extracts all relevant data (designs, proposals, briefs, and direction)
+        for the configured project.
+        Returns:
+        pd.DataFrame: A consolidated DataFrame with all extracted data.
+        """
         designs = self.get_designs()
         address = self.get_address()
         results = []
@@ -150,6 +200,16 @@ class AuroraProjectDataExtractor:
         return pd.concat(results, ignore_index=True)
 
     def format_for_quickbase(self, df: pd.DataFrame, table_id: str, return_fields: list = None):
+        """
+        Formats a Pandas DataFrame into the payload format required by the Quickbase API.
+        Args:
+        df (pd.DataFrame): The DataFrame to format.
+        table_id (str): The ID of the destination Quickbase table.
+        return_fields (list, optional): List of field IDs to be returned by Quickbase.
+
+        Returns:
+        dict: The formatted payload for the Quickbase API.
+        """
         formatted_data = []
     
         for _, row in df.iterrows():
@@ -174,6 +234,16 @@ class AuroraProjectDataExtractor:
 
 
     def post_to_quickbase(self, payload: dict, user_token: str):
+        """
+        Sends the data payload to the Quickbase API.
+
+        Args:
+        payload (dict): The formatted data payload.
+        user_token (str): The Quickbase user token for authentication.
+
+        Returns:
+        dict or None: The JSON response from Quickbase on success, None on failure.
+        """
         headers = {
             'Content-Type': 'application/json',
             "QB-Realm-Hostname": "betterearthsolar.quickbase.com",
