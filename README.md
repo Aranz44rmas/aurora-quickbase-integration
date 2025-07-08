@@ -13,11 +13,10 @@ and automatically creates a new record in a Quickbase table.
 aurora-quickbase-integration/
 ├── src/
 │ ├── extractor.py
-│ └── config_loader.py
 ├── config/
-│ └── config.json
-├── logs/
-│ └── aurora_quickbase.log
+│ └── auth.json
+├── utils/
+│ └── logger
 ├── main.py
 ├── README.md
 ├── requirements.txt
