@@ -1,0 +1,4 @@
+pandas==2.2.2
+requests==2.32.3
+python-dotenv==1.0.1 # To load environment variables (config/settings.py)
+pytest==8.2.2 # To run unit and integration tests
